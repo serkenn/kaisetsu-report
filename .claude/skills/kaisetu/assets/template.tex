@@ -1,0 +1,145 @@
+% kaisetu report — LuaLaTeX テンプレート
+% kaisetu_build.py が %%MARKER%% を置換する。マーカーを消さずに見た目だけ編集すること。
+% 必要: TeX Live 2023 以降（luatexja, tcolorbox, chemfig, mhchem, tabularx, booktabs, fancyvrb）
+\documentclass[a4paper,10pt]{ltjsarticle}
+
+\usepackage[haranoaji]{luatexja-preset}
+\usepackage{amsmath,amssymb}
+\usepackage[version=4]{mhchem}
+\usepackage{chemfig}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{fancyvrb}
+\usepackage{capt-of}
+\usepackage{enumitem}
+\usepackage[most]{tcolorbox}
+\usepackage[margin=17mm,bottom=20mm]{geometry}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+
+\definecolor{kaisetuAccent}{HTML}{1F5F8B}
+\definecolor{kaisetuAccentSoft}{HTML}{EAF2F8}
+\definecolor{kaisetuKey}{HTML}{B06F1A}
+\definecolor{kaisetuKeySoft}{HTML}{FDF5E8}
+\definecolor{kaisetuQuiz}{HTML}{2F6F4F}
+\definecolor{kaisetuQuizSoft}{HTML}{EEF6F1}
+\definecolor{kaisetuLine}{HTML}{D9E0E8}
+\definecolor{kaisetuInkSoft}{HTML}{4A5666}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55\baselineskip}
+\linespread{1.12}
+\setlist{topsep=2pt,itemsep=2pt,parsep=0pt,leftmargin=1.4em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[C]{\color{kaisetuInkSoft}\footnotesize\thepage}
+
+% 大見出し（問題 / 見通し / 結論）
+\newcommand{\sectionHeading}[1]{%
+  {\color{kaisetuAccent}\large\bfseries #1}\par\vspace{2pt}%
+  {\color{kaisetuLine}\hrule height 0.6pt}\vspace{4pt}%
+}
+
+% 本文セクション
+\newtcolorbox{kaisetsuSectionBox}[1]{
+  enhanced, breakable, sharp corners,
+  colback=white, colframe=kaisetuAccent,
+  boxrule=0pt, leftrule=2.5pt, toprule=0pt, bottomrule=0pt, rightrule=0pt,
+  left=8pt, right=0pt, top=2pt, bottom=2pt,
+  title={\bfseries #1}, coltitle=kaisetuAccent,
+  attach title to upper=\par\vspace{2pt},
+  fonttitle=\large
+}
+\newenvironment{kaisetsuSection}[1]{\begin{kaisetsuSectionBox}{#1}}{\end{kaisetsuSectionBox}}
+
+% 重要ポイント
+\newtcolorbox{keyPointBoxInner}[1]{
+  enhanced, breakable, arc=2pt,
+  colback=kaisetuKeySoft, colframe=kaisetuKey,
+  boxrule=0.4pt, leftrule=2.5pt,
+  left=8pt, right=8pt, top=5pt, bottom=5pt,
+  title={\bfseries ◆ #1}, coltitle=kaisetuKey, colbacktitle=kaisetuKeySoft,
+  attach title to upper=\par\vspace{2pt}
+}
+\newenvironment{keyPointBox}[1]{\begin{keyPointBoxInner}{#1}}{\end{keyPointBoxInner}}
+
+% 演習セクション
+\newtcolorbox{quizSectionInner}[1]{
+  enhanced, breakable, sharp corners,
+  colback=white, colframe=kaisetuQuiz,
+  boxrule=0pt, leftrule=2.5pt, toprule=0pt, bottomrule=0pt, rightrule=0pt,
+  left=8pt, right=0pt,
+  title={\bfseries #1}, coltitle=kaisetuQuiz,
+  attach title to upper=\par\vspace{2pt},
+  fonttitle=\large
+}
+\newenvironment{quizSection}[1]{\begin{quizSectionInner}{#1}}{\end{quizSectionInner}}
+
+\newcommand{\quizItem}[2]{%
+  \par\vspace{4pt}%
+  {\colorbox{kaisetuQuiz}{\color{white}\footnotesize\bfseries~#1~}}\quad #2\par%
+}
+
+\newtcolorbox{answerBox}{
+  enhanced, breakable, arc=2pt,
+  colback=kaisetuQuizSoft, colframe=kaisetuQuizSoft,
+  boxrule=0pt, left=8pt, right=8pt, top=4pt, bottom=4pt,
+  before skip=4pt, after skip=8pt,
+  title={\footnotesize\bfseries\color{kaisetuQuiz}解答・解説}, coltitle=kaisetuQuiz,
+  colbacktitle=kaisetuQuizSoft, attach title to upper=\par
+}
+
+% コードブロック（fancyvrb を枠で包む。言語名は任意）
+\newtcolorbox{codeBlock}[1]{
+  enhanced, breakable, arc=2pt,
+  colback=black!3, colframe=kaisetuLine,
+  boxrule=0.4pt, left=6pt, right=6pt, top=4pt, bottom=2pt,
+  before skip=6pt, after skip=6pt,
+  title={\scriptsize\ttfamily\color{kaisetuInkSoft}#1}, coltitle=kaisetuInkSoft,
+  colbacktitle=black!3, attach title to upper=\par\vspace{-2pt}
+}
+
+% 参照資料
+\newtcolorbox{sourceBox}{
+  enhanced, breakable, arc=2pt,
+  colback=kaisetuAccentSoft!40, colframe=kaisetuLine,
+  boxrule=0.4pt, left=8pt, right=8pt, top=4pt, bottom=4pt,
+  fontupper=\footnotesize\color{kaisetuInkSoft},
+  title={\footnotesize\bfseries 参照資料}, coltitle=kaisetuInkSoft,
+  colbacktitle=kaisetuAccentSoft!40, attach title to upper=\par
+}
+
+\begin{document}
+
+{\color{white}\colorbox{kaisetuAccent}{\footnotesize\bfseries~%%META%%~}}
+
+\vspace{6pt}
+{\LARGE\bfseries %%TITLE%%\par}
+\vspace{3pt}
+{\color{kaisetuInkSoft}\large %%SUBTITLE%%\par}
+\vspace{2pt}
+{\color{kaisetuAccent}\hrule height 1.6pt}
+\vspace{8pt}
+
+%%SOURCES%%
+
+\vspace{4pt}
+
+\begin{tcolorbox}[enhanced,breakable,arc=3pt,colback=kaisetuAccentSoft,colframe=kaisetuAccentSoft,boxrule=0pt,left=10pt,right=10pt,top=6pt,bottom=6pt]
+%%PROBLEM%%
+
+\vspace{6pt}
+%%OVERVIEW%%
+\end{tcolorbox}
+
+%%CONTENT%%
+
+\vspace{6pt}
+\begin{tcolorbox}[enhanced,breakable,arc=3pt,colback=white,colframe=kaisetuAccent,boxrule=1.4pt,left=10pt,right=10pt,top=6pt,bottom=6pt]
+%%FINAL_ANSWER%%
+\end{tcolorbox}
+
+\end{document}

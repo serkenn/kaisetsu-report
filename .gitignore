@@ -1,0 +1,13 @@
+# 生成物
+kaisetu-out/
+*.aux
+*.log
+*.out
+
+# OS / エディタ
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
