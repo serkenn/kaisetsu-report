@@ -1,16 +1,25 @@
-# kaisetu — Claude Code 用の解説／試験対策レポート生成スキル
+# kaisetu — Claude・ChatGPT 対応の解説／試験対策レポート生成スキル
 
-Discord bot の `/kaisetu`（プロンプト＋画像 → 構造化出力 → LaTeX → PDF/PNG）を Claude Code の Skill に移植したもの。
-入力を「1 つの質問＋画像 1 枚」から「**ディレクトリ内の PDF・Markdown・テキスト・画像すべて**」に広げ、
-出力を **Markdown / PDF / PNG**（＋ HTML / TeX）に対応させた。macOS / Linux / Windows で動く。
+講義の PDF、ノート、問題の写真から、日本語の解説レポートや試験対策レポートを作る。Claude と ChatGPT では資料をチャットに添付し、Claude Code と Codex では資料のあるフォルダーを指定できる。Markdown・HTML・TeX で出力でき、変換ツールが使える環境では PDF・PNG も生成できる。
 
-```
-/kaisetu                       カレントディレクトリの資料からレポートを作る
-/kaisetu ./exam --mode exam    試験対策レポートにする
-/kaisetu ./docs --formats md   Markdown だけ出す
-```
+## Claude・ChatGPT で使う
 
-## 取り付け
+両サービスとも、登録には同じ ZIP を使う。[kaisetu.zip をダウンロード](kaisetu.zip?raw=true)
+
+- **Claude** の「カスタマイズ」→「スキル」→「＋」→「スキルを作成」→「スキルをアップロード」で ZIP を選び、`kaisetu` をオンにする。スキルの利用にはコード実行を有効にする必要がある。[Claude の公式ヘルプ](https://support.claude.com/ja/articles/12512180)
+- **ChatGPT** の「プラグイン」→「スキル」→「作成」→「コンピューターからアップロード」で ZIP を選ぶ。登録メニューの表示はプランとワークスペース設定による。[ChatGPT の公式ヘルプ](https://help.openai.com/ja-jp/articles/20001066-skills-in-chatgpt)
+
+登録後は、講義資料や問題の写真をチャットに添付して「この資料から、途中式つきの解説レポートを作って」や「試験対策レポートにして。最後に確認問題を3問入れて」と頼む。
+
+スキル登録メニューがない場合も、ZIP を扱えるチャットで **その会話だけ** 試せる。`kaisetu.zip` と資料を一緒に添付し、「kaisetu.zip を展開し、中の SKILL.md に従って、添付資料の解説レポートを作って」と頼む。PDF・PNG 出力には下記の変換ツールが必要。ファイル生成が使えない場合は Markdown 本文を受け取れる。
+
+## Codex で使う
+
+ローカルの Codex に初めて登録する場合は、`kaisetu.zip` 内の `kaisetu` フォルダーを `~/.agents/skills/`（Windows は `%USERPROFILE%\.agents\skills\`）に置く。`kaisetu/SKILL.md` が読める配置なら、どのプロジェクトでも呼び出せる。[Codex のスキルガイド](https://developers.openai.com/codex/skills)
+
+資料があるフォルダーを開き、`$kaisetu このフォルダーの資料から試験対策レポートを作って` と入力する。
+
+## Claude Code に取り付ける
 
 **macOS / Linux**
 
@@ -30,6 +39,12 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1 -Uninstall
 
 取り付け後は、どのディレクトリで Claude Code を開いても `/kaisetu` が使える。
 リンク（Windows はジャンクション）なので、このリポジトリを編集すればそのまま反映される。
+
+```
+/kaisetu                       カレントディレクトリの資料からレポートを作る
+/kaisetu ./exam --mode exam    試験対策レポートにする
+/kaisetu ./docs --formats md   Markdown だけ出す
+```
 
 ## 動作要件
 
@@ -108,7 +123,7 @@ MacTeX（`brew install --cask mactex-no-gui`）や TeX Live full を既に入れ
 
 ```
 資料 (pdf/md/txt/png/jpg…)
-   │  Claude が Read で読む（PDF はページ指定、画像はそのまま）
+   │  本文・図表・数式を読み取る
    ▼
 kaisetu.json          ← 構造化された原稿。references/schema.md に厳密に従う
    │  scripts/kaisetu_build.py（検証 → 変換）
@@ -168,12 +183,16 @@ python3 .claude/skills/kaisetu/scripts/kaisetu_build.py report.json \
 
 ```
 .claude/skills/kaisetu/
-  SKILL.md                    /kaisetu の手順（Claude が読む）
+  SKILL.md                    各環境で共通のレポート作成手順
   references/instructions.md  解説の質に関する指示
   references/schema.md        JSON スキーマと例
   assets/report.css           HTML/PDF の体裁
   assets/template.tex         LuaLaTeX テンプレート（%%MARKER%% を置換）
   scripts/kaisetu_build.py    検証と変換（標準ライブラリのみ）
-install.sh                    macOS / Linux 用インストーラ
-install.ps1                   Windows 用インストーラ
+install.sh                    Claude Code 用インストーラ（macOS / Linux）
+install.ps1                   Claude Code 用インストーラ（Windows）
+kaisetu.zip                   Claude・ChatGPT 共通の登録用 ZIP
+scripts/package_chatgpt.py    登録用 ZIP の作成
 ```
+
+スキルのソースを変更したら、リポジトリ直下で `python scripts/package_chatgpt.py` を実行して ZIP を更新する。
