@@ -1,4 +1,4 @@
-# kaisetu スキルを %USERPROFILE%\.claude\skills に取り付ける（Windows 用）。
+﻿# kaisetu スキルを %USERPROFILE%\.claude\skills に取り付ける（Windows 用）。
 # macOS / Linux は install.sh を使う。
 #
 #   powershell -ExecutionPolicy Bypass -File .\install.ps1
@@ -108,13 +108,14 @@ function Test-Any {
 
 Test-Any -Label 'Python 3' -Hint 'winget install Python.Python.3.12' -Commands @('python', 'python3', 'py')
 Test-Any -Label 'PNG 変換 (poppler)' -Hint 'winget install oschwartz10612.Poppler もしくは ImageMagick' `
-    -Commands @('pdftoppm', 'pdftocairo', 'magick', 'convert')
+    -Commands @('pdftoppm', 'pdftocairo', 'magick')  # convert.exe は Windows のファイルシステム変換ツールなので見ない
 Test-Any -Label 'Chrome 系（PDF レンダラ）' -Hint 'winget install Google.Chrome' `
     -Commands @('chrome', 'msedge') `
     -Paths @(
         'C:\Program Files\Google\Chrome\Application\chrome.exe',
         'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe',
-        'C:\Program Files\Microsoft\Edge\Application\msedge.exe'
+        'C:\Program Files\Microsoft\Edge\Application\msedge.exe',
+        'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
     )
 
 if ((Get-Command lualatex -ErrorAction SilentlyContinue) -or (Find-TinyTeXBin)) {
