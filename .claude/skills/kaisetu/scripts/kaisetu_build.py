@@ -96,7 +96,8 @@ CONVERTIBLE_EXTENSIONS = {".webp", ".gif", ".tiff", ".tif", ".heic", ".bmp"}
 IMAGE_CONVERTERS = (
     ("sips", lambda source, target: ["sips", "-s", "format", "png", str(source), "--out", str(target)]),
     ("magick", lambda source, target: ["magick", str(source), str(target)]),
-    ("convert", lambda source, target: ["convert", str(source), str(target)]),
+    # Windows の convert.exe はファイルシステム変換ツールなので ImageMagick とみなさない。
+    *(() if IS_WINDOWS else (("convert", lambda source, target: ["convert", str(source), str(target)]),)),
 )
 
 MODES = {
@@ -913,9 +914,15 @@ def _run_chrome(command: list[str], pdf_path: Path, deadline_s: float) -> str:
     start = time.monotonic()
     stable_size = -1
     stable_since = 0.0
+    exited_at: float | None = None
     while time.monotonic() - start < deadline_s:
         if process.poll() is not None:
-            break
+            # Windows の Edge/Chrome はランチャーが即終了し、子プロセスが印刷を続けることがある。
+            # 終了後もしばらくは PDF の出現を待つ。
+            if exited_at is None:
+                exited_at = time.monotonic()
+            if not pdf_path.is_file() and time.monotonic() - exited_at >= 15:
+                break
         if pdf_path.is_file():
             size = pdf_path.stat().st_size
             if size > 0 and size == stable_size:
@@ -946,7 +953,8 @@ def pdf_via_chrome(html_path: Path, pdf_path: Path, wait_ms: int) -> None:
             "ブラウザを入れるか lualatex を入れるか、--formats から pdf,png を外してください。"
         )
     deadline = wait_ms / 1000 + 30
-    with tempfile.TemporaryDirectory() as profile:
+    # 子プロセスがプロファイルの lockfile を掴んだままのことがあるので、削除失敗は無視する。
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as profile:
         base = [
             chrome,
             "--headless=new",
@@ -1001,7 +1009,7 @@ def pdf_to_png(pdf_path: Path, outdir: Path, stem: str, dpi: int) -> list[Path]:
             )
             return sorted(outdir.glob(f"{stem}-p*.png"))
 
-    magick = shutil.which("magick") or shutil.which("convert")
+    magick = shutil.which("magick") or (None if IS_WINDOWS else shutil.which("convert"))
     if magick:
         with tempfile.TemporaryDirectory() as workdir:
             subprocess.run(
